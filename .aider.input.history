@@ -1,0 +1,24 @@
+
+# 2026-09-30 02:31:02.243140
++Fix MultiTokenStaking: add missing emergencyWithdraw function that withdraws all staked tokens without penalties and updates user balances accordingly as described in issue #195
+
+# 2026-09-30 02:31:02.243850
++Fix MultiTokenStaking: add missing emergencyWithdraw function that withdraws all staked tokens without penalties and updates user balances accordingly as described in issue #195
+
+# 2026-09-30 02:32:40.399415
++Fix MultiTokenStaking: add missing emergencyWithdraw function that withdraws all staked tokens without penalties and updates user balances accordingly as described in issue #195
+
+# 2026-09-30 02:32:40.400242
++Fix MultiTokenStaking: add missing emergencyWithdraw function that withdraws all staked tokens without penalties and updates user balances accordingly as described in issue #195
+
+# 2026-10-05 14:06:24.674014
++Modify ratelimit.py to differentiate between authenticated and anonymous clients. Use request.state.user (set by auth middleware) to detect authenticated users; fallback to IP. Maintain separate counters for each client identifier (user ID or IP). Allow different rate limit configurations for authenticated vs anonymous (default to same as original). Keep the middleware excluding /health path. Update headers to reflect the limit and remaining for the applied config.
+
+# 2026-10-05 14:06:24.675795
++Modify ratelimit.py to differentiate between authenticated and anonymous clients. Use request.state.user (set by auth middleware) to detect authenticated users; fallback to IP. Maintain separate counters for each client identifier (user ID or IP). Allow different rate limit configurations for authenticated vs anonymous (default to same as original). Keep the middleware excluding /health path. Update headers to reflect the limit and remaining for the applied config.
+
+# 2026-10-05 14:09:22.163223
++Modify ratelimit.py to differentiate between authenticated and anonymous clients. Use request.state.user (set by auth middleware) to detect authenticated users; fallback to IP. Maintain separate counters for each client identifier (user ID or IP). Allow different rate limit configurations for authenticated vs anonymous (default to same as original). Keep the middleware excluding /health path. Update headers to reflect the limit and remaining for the applied config.
+
+# 2026-10-05 14:09:22.165598
++Modify ratelimit.py to differentiate between authenticated and anonymous clients. Use request.state.user (set by auth middleware) to detect authenticated users; fallback to IP. Maintain separate counters for each client identifier (user ID or IP). Allow different rate limit configurations for authenticated vs anonymous (default to same as original). Keep the middleware excluding /health path. Update headers to reflect the limit and remaining for the applied config.

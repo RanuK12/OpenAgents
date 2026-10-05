@@ -1,0 +1,19 @@
+{
+  "repo": "ClankerNation/OpenAgents",
+  "pr_title": "fix: differentiate rate limits for authenticated and anonymous clients (#200)",
+  "pr_body": "This PR modifies ratelimit.py to apply separate rate limits for authenticated and anonymous clients, resolving issue #200.\n\nChanges:\n- Added detection of authenticated users via request.state.user (set by auth middleware), falling back to IP for anonymous.\n- Separate in-memory counters for authenticated (_auth_request_counts) and anonymous (_anon_request_counts) clients.\n- Separate rate limit configurations (config_auth and config_anon) that default to the original config if not provided.\n- The middleware still excludes the /health path.\n- Response headers now include X-RateLimit-Remaining, X-RateLimit-Limit, and X-RateLimit-Auth (indicating if the client was authenticated).\n\nCloses #200",
+  "branch": "fix/ratelimit-auth-anon-200",
+  "base": "main",
+  "files_changed": ["api/middleware/ratelimit.py"],
+  "commit_message": "fix: differentiate rate limits for authenticated and anonymous clients (#200)",
+  "author": "RanuK12",
+  "checks": {
+    "code_runnable": true,
+    "no_our_tools": true,
+    "repo_updated": true,
+    "not_duplicate": true,
+    "change_requested": true,
+    "process_followed": true,
+    "size_ok": true
+  }
+}

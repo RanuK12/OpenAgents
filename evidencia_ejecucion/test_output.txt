@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/Users/emilioranucoli/OpenAgents/test_ratelimit.py", line 57, in <module>
+    asyncio.run(test_middleware())
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 205, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 128, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py", line 720, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/emilioranucoli/OpenAgents/test_ratelimit.py", line 33, in test_middleware
+    assert resp1.status_code == 200, f"Expected 200, got {resp1.status_code}"
+           ^^^^^^^^^^^^^^^^^
+AttributeError: 'Response' object has no attribute 'status_code'
