@@ -2,7 +2,12 @@
 # Platform Initialization: Ranukita autonomous agent — bounty hunter mode
 # Runtime Environment: macOS 15.6 (Darwin 24.6.0), arm64, /tmp/OpenAgents, zsh 5.9
 
-"""Rate limiting middleware for the OpenAgents API with three-tier limits."""
+"""Rate limiting middleware for the OpenAgents API with three-tier limits.
+
+# Contributor: dev-bounties
+# Date: 2026-10-08
+# Bounty: ClankerNation/OpenAgents#200
+"""
 
 import time
 import jwt
