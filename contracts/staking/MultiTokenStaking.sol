@@ -33,14 +33,17 @@ contract MultiTokenStaking is Ownable, ReentrancyGuard {
     PoolInfo[] public poolInfo;
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
 
+    mapping(address => bool) public isTokenAdded;
+
     event PoolAdded(uint256 indexed pid, address token, uint256 allocPoint);
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event Harvest(address indexed user, uint256 indexed pid, uint256 amount);
+    event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
-    // BUG: Missing zero-address validation — rewardToken can be set to address(0),
-    // causing all reward transfers to silently burn tokens or revert unpredictably.
     constructor(address _rewardToken, uint256 _rewardPerSecond) Ownable(msg.sender) {
+        require(_rewardToken != address(0), "MultiStaking: zero reward token address");
+        require(_rewardPerSecond > 0, "MultiStaking: rewardPerSecond must be positive");
         rewardToken = IERC20(_rewardToken);
         rewardPerSecond = _rewardPerSecond;
     }
@@ -48,10 +51,10 @@ contract MultiTokenStaking is Ownable, ReentrancyGuard {
     /// @notice Add a new staking pool.
     /// @param _allocPoint Allocation weight for reward distribution.
     /// @param _stakeToken The ERC20 token to be staked in this pool.
-    // BUG: No duplicate token check — the same token can be added multiple times,
-    // causing reward accounting to break as totalAllocPoint inflates and existing
-    // stakers in the original pool get diluted unexpectedly.
     function addPool(uint256 _allocPoint, address _stakeToken) external onlyOwner {
+        require(_stakeToken != address(0), "MultiStaking: zero stake token address");
+        require(!isTokenAdded[_stakeToken], "MultiStaking: token already added");
+        isTokenAdded[_stakeToken] = true;
         totalAllocPoint += _allocPoint;
         poolInfo.push(PoolInfo({
             stakeToken: IERC20(_stakeToken),
@@ -143,5 +146,22 @@ contract MultiTokenStaking is Ownable, ReentrancyGuard {
             accRewardPerShare += reward * 1e12 / pool.totalStaked;
         }
         return user.amount * accRewardPerShare / 1e12 - user.rewardDebt;
+    }
+
+    /// @notice Withdraw staked tokens without harvesting rewards. EMERGENCY ONLY.
+    /// @param pid Pool ID to withdraw from.
+    function emergencyWithdraw(uint256 pid) external nonReentrant {
+        require(pid < poolInfo.length, "MultiStaking: pool does not exist");
+        PoolInfo storage pool = poolInfo[pid];
+        UserInfo storage user = userInfo[pid][msg.sender];
+        uint256 amount = user.amount;
+        require(amount > 0, "MultiStaking: nothing to withdraw");
+
+        user.amount = 0;
+        user.rewardDebt = 0;
+        pool.totalStaked -= amount;
+
+        pool.stakeToken.safeTransfer(msg.sender, amount);
+        emit EmergencyWithdraw(msg.sender, pid, amount);
     }
 }
