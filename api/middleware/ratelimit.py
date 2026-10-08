@@ -1,4 +1,9 @@
-"""Rate limiting middleware for the OpenAgents API."""
+"""Rate limiting middleware for the OpenAgents API.
+
+Created by: Emilio Ranucoli
+Email: ranucoliemilio@gmail.com
+Date: 2026-10-08
+"""
 
 import time
 from collections import defaultdict
@@ -11,13 +16,15 @@ from typing import Dict, Tuple
 class RateLimitConfig:
     def __init__(
         self,
-        requests_per_window: int = 100,
+        requests_per_window: int = 60,
         window_seconds: int = 60,
         burst_limit: int = 20,
+        tier: str = "anonymous",
     ):
         self.requests_per_window = requests_per_window
         self.window_seconds = window_seconds
         self.burst_limit = burst_limit
+        self.tier = tier
 
 
 # BUG: In-memory store — all counters reset when the server restarts,
@@ -29,6 +36,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, config: RateLimitConfig = None):
         super().__init__(app)
         self.config = config or RateLimitConfig()
+        self._tier_limits = {
+            "anonymous": 60,
+            "authenticated": 300,
+            "premium": 1000
+        }
 
     def _get_client_ip(self, request: Request) -> str:
         # BUG: Trusts X-Forwarded-For header without validation — clients can
@@ -38,7 +50,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
-    def _is_rate_limited(self, client_ip: str) -> Tuple[bool, int]:
+    def _get_user_tier(self, request: Request) -> str:
+        if request.user and request.user.is_authenticated:
+            if hasattr(request.user, 'is_premium') and request.user.is_premium:
+                return "premium"
+            else:
+                return "authenticated"
+        return "anonymous"
+
+    def get_rate_limit(self, request: Request) -> int:
+        tier = self._get_user_tier(request)
+        return self._tier_limits[tier]
+
+    def _is_rate_limited(self, client_ip: str, request: Request) -> Tuple[bool, int]:
         global _request_counts
         count, window_start = _request_counts[client_ip]
         now = time.time()
@@ -64,6 +88,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         client_ip = self._get_client_ip(request)
         is_limited, value = self._is_rate_limited(client_ip)
 
+        tier = self._get_user_tier(request)
+        limit = self._tier_limits[tier]
+        
         if is_limited:
             return JSONResponse(
                 status_code=429,
@@ -71,12 +98,16 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     "error": "Rate limit exceeded",
                     "retry_after": value,
                 },
-                headers={"Retry-After": str(value)},
+                headers={
+                    "Retry-After": str(value),
+                    "X-RateLimit-Limit": str(limit),
+                    "X-RateLimit-Remaining": str(value)
+                },
             )
 
         response = await call_next(request)
         response.headers["X-RateLimit-Remaining"] = str(value)
-        response.headers["X-RateLimit-Limit"] = str(self.config.requests_per_window)
+        response.headers["X-RateLimit-Limit"] = str(limit)
         return response
 
 
